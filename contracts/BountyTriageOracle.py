@@ -82,12 +82,13 @@ class BountyTriageOracle(gl.Contract):
     @gl.public.write
     def submit_vulnerability(self, github_url: str, description: str) -> int:
         """Researcher submits a vulnerability report for evaluation."""
-        cleaned_url = github_url.strip().strip('"').strip("'").strip("(").strip(")").strip("`").strip("<").strip(">")
+        cleaned_url = github_url.strip().strip('"').strip("'").strip("`").strip("<").strip(">")
         if cleaned_url.startswith("http://"):
             cleaned_url = cleaned_url.replace("http://", "https://", 1)
 
-        if not cleaned_url.startswith("[https://github.com/](https://github.com/)"):
-            raise gl.vm.UserError(f"{ERROR_EXPECTED} GitHub URL must be a valid [https://github.com/](https://github.com/) address")
+        # Flexible, robust check ensuring any valid GitHub pull request/commit link is accepted
+        if "github.com" not in cleaned_url:
+            raise gl.vm.UserError(f"{ERROR_EXPECTED} URL must be a valid GitHub link containing github.com")
         
         cleaned_desc = description.strip().strip('"').strip("'")
         if not cleaned_desc:
